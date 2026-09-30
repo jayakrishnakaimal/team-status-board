@@ -1,0 +1,4 @@
+node_modules/
+team_status.db*
+.DS_Store
+.bob/

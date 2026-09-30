@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Status Board - Manager Dashboard</title>
+  <!-- Load Official IBM Plex Sans Font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap">
+  <!-- Load Official Carbon Design System CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/carbon-components@10.58.0/css/carbon-components.min.css">
+  
+  <style>
+    :root {
+      --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: #f4f4f4; /* Carbon $ui-background */
+      color: #161616;            /* Carbon $text-01 */
+      padding-top: 48px;         /* Height of global Carbon Header */
+      padding-bottom: 80px;
+    }
+
+    /* Carbon Header Customization */
+    .cds-header {
+      background-color: #161616;
+      border-bottom: 1px solid #393939;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      height: 48px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 8000;
+    }
+
+    .cds-header-title {
+      color: #f4f4f4;
+      font-weight: 400;
+      font-size: 14px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.1px;
+    }
+
+    .cds-header-title strong {
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .cds-header-subtitle {
+      color: #8d8d8d;
+      font-size: 12px;
+      margin-left: 8px;
+      border-left: 1px solid #393939;
+      padding-left: 8px;
+    }
+
+    /* Main Container with Carbon Layout Grid */
+    .cds-container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    /* Carbon Tabs Overrides */
+    .cds-tabs {
+      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 24px;
+    }
+
+    .cds-tabs-nav {
+      display: flex;
+      list-style: none;
+      gap: 2px;
+    }
+
+    .cds-tab-btn {
+      background: none;
+      border: none;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #525252;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.1s ease;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cds-tab-btn:hover {
+      background-color: #e5e5e5;
+      color: #161616;
+    }
+
+    .cds-tab-btn.active {
+      color: #0f62fe;
+      border-bottom-color: #0f62fe;
+      font-weight: 600;
+    }
+
+    /* Panel Views */
+    .panel {
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    /* Carbon-styled Toolbar */
+    .cds-toolbar {
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .cds-toolbar-left, .cds-toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Carbon Stats Tile Row */
+    .cds-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .cds-stat-tile {
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cds-stat-label {
+      font-size: 12px;
+      color: #525252;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+
+    .cds-stat-value {
+      font-size: 32px;
+      font-weight: 300;
+      color: #161616;
+      margin-top: 4px;
+    }
+
+    /* Content Layout Structure */
+    .cds-board-grid {
+      display: grid;
+      grid-template-columns: 2.8fr 1.2fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .cds-board-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Carbon Update List and Cards (bx--tile) */
+    .update-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .cds-update-card {
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      padding: 24px;
+      position: relative;
+    }
+
+    .cds-update-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .cds-member-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #161616;
+    }
+
+    .cds-update-meta {
+      font-size: 12px;
+      color: #525252;
+      margin-top: 2px;
+    }
+
+    /* Status Items Grid */
+    .cds-status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .cds-status-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Carbon Spacing Block Container */
+    .cds-status-block {
+      background-color: #f4f4f4;
+      border-top: 3px solid #161616;
+      padding: 12px 14px;
+    }
+
+    .cds-status-block.done { border-top-color: #198038; }     /* Carbon $support-02 (green) */
+    .cds-status-block.doing { border-top-color: #0043ce; }    /* Carbon $support-04 (blue) */
+    .cds-status-block.blockers { border-top-color: #da1e28; } /* Carbon $support-01 (red) */
+    .cds-status-block.plan { border-top-color: #8a3ffc; }     /* Carbon purple-60 */
+
+    .cds-status-block h4 {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      color: #525252;
+      margin-bottom: 6px;
+    }
+
+    .cds-status-block p {
+      font-size: 14px;
+      color: #161616;
+      white-space: pre-line;
+    }
+
+    /* Carbon low-contrast badge links */
+    .source-badge-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      border-top: 1px dashed #e0e0e0;
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+
+    .cds-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background-color 0.1s ease;
+      letter-spacing: 0.2px;
+      border-radius: 0; /* Strict Carbon requirement - flat corners */
+    }
+
+    .cds-badge.jira { background-color: #e0f2fe; color: #0043ce; }
+    .cds-badge.figma { background-color: #fce4ec; color: #a2124d; }
+    .cds-badge.aha { background-color: #fff3e0; color: #bc4c00; }
+    .cds-badge.boxnotes { background-color: #f1f0ee; color: #393939; }
+    .cds-badge.slack { background-color: #e8f5e9; color: #198038; }
+
+    .cds-badge:hover {
+      opacity: 0.85;
+      text-decoration: underline;
+    }
+
+    /* Carbon structured right side Panels */
+    .cds-sidebar-tile {
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .cds-sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #161616;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Pending List styling */
+    .cds-pending-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .cds-pending-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background-color: #f4f4f4;
+      font-size: 13px;
+    }
+
+    .cds-pending-name {
+      font-weight: 500;
+      color: #161616;
+    }
+
+    .cds-pending-link {
+      color: #0f62fe;
+      text-decoration: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .cds-pending-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Live Conversations Streams Custom Carbon styling */
+    .conversations-sublabel {
+      font-size: 11px;
+      color: #525252;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .conversations-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    /* Carbon Mini-Tabs inside Sidebar */
+    .mini-tabs {
+      display: flex;
+      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 12px;
+      gap: 2px;
+    }
+
+    .mini-tab-btn {
+      background: none;
+      border: none;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #525252;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.1s ease;
+      font-family: inherit;
+    }
+
+    .mini-tab-btn:hover {
+      background-color: #e5e5e5;
+      color: #161616;
+    }
+
+    .mini-tab-btn.active {
+      color: #0f62fe;
+      border-bottom-color: #0f62fe;
+      font-weight: 600;
+    }
+
+    /* Carbon styled discussion cards */
+    .conv-msg {
+      background-color: #f4f4f4;
+      border: 1px solid #e0e0e0;
+      padding: 10px 12px;
+    }
+
+    .conv-msg-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      font-size: 11px;
+    }
+
+    .conv-msg-user {
+      font-weight: 600;
+      color: #161616;
+    }
+
+    .conv-msg-user.wes {
+      color: #0f62fe; /* Color highlight for Wes Jones Product Owner */
+    }
+
+    .conv-msg-meta {
+      font-weight: normal;
+      color: #525252;
+      font-size: 9px;
+      margin-left: 2px;
+    }
+
+    .conv-msg-time {
+      color: #8d8d8d;
+    }
+
+    .conv-msg-text {
+      color: #161616;
+      line-height: 1.4;
+      font-size: 12px;
+      white-space: pre-line;
+    }
+
+    /* Carbon High Contrast notification highlight for Wes Jones */
+    .conv-msg.wes-highlight {
+      background-color: #edf5ff; /* Carbon blue-10 highlight block */
+      border-left: 3px solid #0f62fe; /* Blue focal indicator */
+    }
+
+    /* Carbon-styled inputs and forms */
+    .cds-form-card {
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      padding: 24px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .cds-form-card h2 {
+      font-size: 18px;
+      font-weight: 400;
+      color: #161616;
+      margin-bottom: 24px;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 12px;
+    }
+
+    /* Directory grid layout */
+    .cds-member-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .cds-member-card {
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Modal Backdrop */
+    .cds-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9000;
+      padding: 16px;
+    }
+
+    .cds-modal {
+      background-color: #ffffff;
+      width: 100%;
+      max-width: 640px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .cds-modal-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cds-modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #161616;
+    }
+
+    .cds-modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #525252;
+    }
+
+    .cds-modal-close:hover {
+      color: #161616;
+    }
+
+    .cds-modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    /* Timeline styling */
+    .cds-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .cds-timeline-item {
+      border-left: 2px solid #e0e0e0;
+      padding-left: 16px;
+      position: relative;
+    }
+
+    .cds-timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -6px;
+      top: 4px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #0f62fe;
+    }
+
+    .cds-timeline-date {
+      font-size: 12px;
+      font-weight: 600;
+      color: #525252;
+      margin-bottom: 6px;
+    }
+
+    /* Alerts styling following Carbon Toast Alerts */
+    .cds-toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .cds-toast {
+      display: flex;
+      width: 320px;
+      background-color: #393939; /* Carbon dark grey alert */
+      color: #ffffff;
+      font-size: 14px;
+      animation: slideIn 0.2s cubic-bezier(0, 0, 0.25, 1);
+    }
+
+    .cds-toast-bar {
+      width: 4px;
+    }
+    
+    .cds-toast-success .cds-toast-bar { background-color: #24a148; }
+    .cds-toast-error .cds-toast-bar { background-color: #fa4d56; }
+
+    .cds-toast-content {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cds-toast-close {
+      cursor: pointer;
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 16px;
+      margin-left: 12px;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* IBM Carbon Combobox Styles */
+    .bx--combo-box {
+      position: relative;
+      width: 100%;
+    }
+    .bx--list-box__field {
+      display: flex;
+      align-items: center;
+      position: relative;
+      width: 100%;
+      height: 40px;
+      border: 1px solid #e0e0e0;
+      border-bottom: 1px solid #161616;
+      background-color: #ffffff;
+      padding-right: 32px;
+      cursor: pointer;
+    }
+    .bx--list-box__field input.bx--text-input {
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      background: none !important;
+      margin: 0 !important;
+      padding: 0 16px !important;
+      width: 100% !important;
+      height: 100% !important;
+      font-size: 14px;
+      color: #161616;
+      cursor: text;
+    }
+    .bx--list-box__menu-icon {
+      position: absolute;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #525252;
+    }
+    .bx--list-box__selection {
+      position: absolute;
+      right: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #525252;
+    }
+    .bx--list-box__menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+    .bx--list-box__menu-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #161616;
+      transition: background-color 0.1s ease;
+    }
+    .bx--list-box__menu-item:hover {
+      background-color: #e5e5e5;
+    }
+    .bx--list-box__menu-item.selected {
+      background-color: #e5e5e5;
+      font-weight: 600;
+      color: #0f62fe;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Carbon Global Header Bar -->
+  <header class="cds-header">
+    <a href="#" class="cds-header-title">
+      <strong>IBM</strong> Team Status Board
+      <span class="cds-header-subtitle">Manager cockpit</span>
+    </a>
+  </header>
+
+  <div class="cds-container">
+    
+    <!-- Carbon Nav Tabs bar -->
+    <div class="cds-tabs">
+      <div class="cds-tabs-nav">
+        <button class="cds-tab-btn active" onclick="switchTab('daily')">Daily Updates</button>
+        <button class="cds-tab-btn" onclick="switchTab('weekly')">Weekly Summaries</button>
+        <button class="cds-tab-btn" onclick="switchTab('members-tab')">Manage Team</button>
+        <button class="cds-tab-btn" onclick="switchTab('submit-tab')">Log Status Update</button>
+      </div>
+    </div>
+
+    <!-- Alert Toast Area -->
+    <div id="alert-container" class="cds-toast-container"></div>
+
+    <!-- DAILY PANEL -->
+    <div id="daily" class="panel active">
+      <div class="cds-toolbar">
+        <div class="cds-toolbar-left">
+          <label class="bx--label" style="margin-bottom:0; font-weight:500; font-size:13px;" for="daily-date">Target Date:</label>
+          <input type="date" id="daily-date" class="bx--text-input date-input" style="width:auto; margin:0;" onchange="loadDailyStatus()">
+          <button class="bx--btn bx--btn--secondary bx--btn--sm" style="height:36px; padding: 0 16px;" onclick="setToday()">Today</button>
+          
+          <label class="bx--label" style="margin-bottom:0; font-weight:500; font-size:13px; margin-left:12px;" for="daily-filter-search">Filter Member:</label>
+          <div class="bx--combo-box bx--list-box" id="daily-filter-combobox-wrapper" style="width:200px; margin:0;">
+            <div class="bx--list-box__field" onclick="toggleFilterMenu(event)" role="button" aria-haspopup="true" aria-expanded="false">
+              <input type="text" id="daily-filter-search" class="bx--text-input" placeholder="All members..." oninput="filterFilterOptions()" onfocus="openFilterMenu()" autocomplete="off">
+              <div id="daily-filter-clear-btn" class="bx--list-box__selection" style="display:none;" onclick="clearFilterSelection(event)" title="Clear filter">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm3.5 10.1l-1.4 1.4L8 9.4l-2.1 2.1-1.4-1.4L6.6 8 4.5 5.9l1.4-1.4L8 6.6l2.1-2.1 1.4 1.4L9.4 8l2.1 2.1z"></path></svg>
+              </div>
+              <div class="bx--list-box__menu-icon">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11L3 6l1.4-1.4L8 8.2l3.6-3.6L13 6z"></path></svg>
+              </div>
+            </div>
+            <input type="hidden" id="daily-filter-member-id">
+            <div id="daily-filter-menu" class="bx--list-box__menu" style="display:none;" role="listbox">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+        <div class="cds-toolbar-right">
+          <button class="bx--btn bx--btn--primary bx--btn--sm" onclick="switchTab('submit-tab', {type: 'daily'})">
+            Log Daily Status
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="cds-stats-grid">
+        <div class="cds-stat-tile">
+          <span class="cds-stat-label">Submissions</span>
+          <span class="cds-stat-value" id="daily-stat-sub">0</span>
+        </div>
+        <div class="cds-stat-tile">
+          <span class="cds-stat-label">Pending Updates</span>
+          <span class="cds-stat-value" id="daily-stat-pend" style="color: #525252;">0</span>
+        </div>
+        <div class="cds-stat-tile">
+          <span class="cds-stat-label">Active Blockers</span>
+          <span class="cds-stat-value" id="daily-stat-block" style="color: #da1e28;">0</span>
+        </div>
+      </div>
+
+      <!-- Main Board Grid -->
+      <div class="cds-board-grid">
+        <div>
+          <h2 style="font-size:15px; margin-bottom:12px; font-weight:500; color: #525252;">Submitted Status Updates</h2>
+          <div id="daily-updates" class="update-list">
+            <!-- Updates rendered dynamically -->
+          </div>
+        </div>
+        <div>
+          <div class="cds-sidebar-tile">
+            <div class="cds-sidebar-title">Pending Submission</div>
+            <ul id="daily-pending" class="cds-pending-list">
+              <!-- Pending rendered dynamically -->
+            </ul>
+          </div>
+
+          <!-- Discussions Widget -->
+          <div class="cds-sidebar-tile conversations-panel">
+            <div class="conversations-header">
+              <span class="conversations-title">💬 Live Discussions</span>
+              <span class="live-indicator">LIVE</span>
+            </div>
+            
+            <div class="mini-tabs">
+              <button id="mini-tab-slack" class="mini-tab-btn active" onclick="switchMiniTab('slack')">Slack</button>
+              <button id="mini-tab-figma" class="mini-tab-btn" onclick="switchMiniTab('figma')">Figma Comments</button>
+            </div>
+
+            <div id="conversations-channel-label" class="conversations-sublabel">Channel: #ikigai-ux-collab</div>
+            
+            <div id="live-conversations-list" class="conversations-list">
+              <div class="conversations-loading">Loading live discussions...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEKLY PANEL -->
+    <div id="weekly" class="panel">
+      <div class="cds-toolbar">
+        <div class="cds-toolbar-left">
+          <label class="bx--label" style="margin-bottom:0; font-weight:500; font-size:13px;" for="weekly-date">Target Date:</label>
+          <input type="date" id="weekly-date" class="bx--text-input date-input" style="width:auto; margin:0;" onchange="loadWeeklyStatus()">
+          <button class="bx--btn bx--btn--secondary bx--btn--sm" style="height:36px; padding: 0 16px;" onclick="setThisWeek()">Current Week</button>
+        </div>
+        <div class="cds-toolbar-right">
+          <button class="bx--btn bx--btn--primary bx--btn--sm" onclick="switchTab('submit-tab', {type: 'weekly'})">
+            Log Weekly Summary
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="cds-stats-grid">
+        <div class="cds-stat-tile">
+          <span class="cds-stat-label">Submissions</span>
+          <span class="cds-stat-value" id="weekly-stat-sub">0</span>
+        </div>
+        <div class="cds-stat-tile">
+          <span class="cds-stat-label">Pending Updates</span>
+          <span class="cds-stat-value" id="weekly-stat-pend" style="color: #525252;">0</span>
+        </div>
+        <div class="cds-stat-tile">
+          <span class="cds-stat-label">Active Blockers</span>
+          <span class="cds-stat-value" id="weekly-stat-block" style="color: #da1e28;">0</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px; font-size:13px; color:#525252; background-color:#ffffff; padding:12px 16px; border:1px solid #e0e0e0;" id="week-date-range-label">
+        Week Range:
+      </div>
+
+      <!-- Main Board Grid -->
+      <div class="cds-board-grid">
+        <div>
+          <h2 style="font-size:15px; margin-bottom:12px; font-weight:500; color: #525252;">Submitted Weekly Summaries</h2>
+          <div id="weekly-updates" class="update-list">
+            <!-- Weekly summaries dynamically rendered -->
+          </div>
+        </div>
+        <div>
+          <div class="cds-sidebar-tile">
+            <div class="cds-sidebar-title">Pending Submission</div>
+            <ul id="weekly-pending" class="cds-pending-list">
+              <!-- Pending dynamically rendered -->
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMBERS PANEL -->
+    <div id="members-tab" class="panel">
+      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px;">
+        <div>
+          <div class="cds-form-card" style="margin:0;">
+            <h2>Add Team Member</h2>
+            <form id="add-member-form" onsubmit="handleAddMember(event)">
+              <div class="bx--form-item">
+                <label for="member-name" class="bx--label">Full Name *</label>
+                <input type="text" id="member-name" class="bx--text-input" required placeholder="e.g. Emma Watson">
+              </div>
+              <div class="bx--form-item" style="margin-top: 16px;">
+                <label for="member-email" class="bx--label">Email Address</label>
+                <input type="email" id="member-email" class="bx--text-input" placeholder="e.g. emma@team.com">
+              </div>
+              <button type="submit" class="bx--btn bx--btn--primary" style="margin-top:24px; width:100%; justify-content:center;">
+                Add Member
+              </button>
+            </form>
+          </div>
+        </div>
+        <div>
+          <h2 style="font-size:15px; margin-bottom:12px; font-weight:500; color: #525252;">Team Directory</h2>
+          <div id="members-list" class="cds-member-grid">
+            <!-- Members rendered dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG STATUS PANEL -->
+    <div id="submit-tab" class="panel">
+      <div class="cds-form-card">
+        <h2 id="log-status-title">Log Status Update</h2>
+        <form id="status-update-form" onsubmit="handleStatusSubmit(event)">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom:16px;">
+            <div class="bx--form-item">
+              <label for="status-member" class="bx--label">Team Member *</label>
+              <!-- Carbon Combo Box Combobox Search Widget -->
+              <div class="bx--combo-box bx--list-box" id="member-combobox-wrapper">
+                <div class="bx--list-box__field" onclick="toggleComboboxMenu(event)" role="button" aria-haspopup="true" aria-expanded="false">
+                  <input type="text" id="status-member-search" class="bx--text-input" placeholder="Search team member..." oninput="filterComboboxOptions(event)" onfocus="openComboboxMenu()" autocomplete="off">
+                  <div id="combobox-clear-btn" class="bx--list-box__selection" style="display:none;" onclick="clearComboboxSelection(event)" title="Clear selected item">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm3.5 10.1l-1.4 1.4L8 9.4l-2.1 2.1-1.4-1.4L6.6 8 4.5 5.9l1.4-1.4L8 6.6l2.1-2.1 1.4 1.4L9.4 8l2.1 2.1z"></path></svg>
+                  </div>
+                  <div class="bx--list-box__menu-icon">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 11L3 6l1.4-1.4L8 8.2l3.6-3.6L13 6z"></path></svg>
+                  </div>
+                </div>
+                <!-- Hidden inputs for validation & actual value preservation -->
+                <input type="hidden" id="status-member" required>
+                <div id="combobox-menu" class="bx--list-box__menu" style="display:none;" role="listbox">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+            </div>
+            <div class="bx--form-item">
+              <label for="status-type" class="bx--label">Update Type *</label>
+              <div class="bx--select">
+                <select id="status-type" class="bx--select-input" required onchange="toggleFormType()">
+                  <option value="daily">Daily Status</option>
+                  <option value="weekly">Weekly Summary</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom:16px;">
+            <div class="bx--form-item">
+              <label for="status-submitted-at" class="bx--label">Date Submitted (Optional)</label>
+              <input type="date" id="status-submitted-at" class="bx--text-input">
+            </div>
+            <div class="bx--form-item" id="week-start-field" style="display:none;">
+              <label for="status-week-start" class="bx--label">Week Start Date (Optional)</label>
+              <input type="date" id="status-week-start" class="bx--text-input">
+            </div>
+          </div>
+
+          <div class="bx--form-item" style="margin-bottom:16px;">
+            <label for="status-done" id="lbl-done" class="bx--label">Done (What was achieved today) *</label>
+            <textarea id="status-done" class="bx--text-area" required placeholder="Describe what has been completed..." style="width:100%; min-height:80px; padding:10px; border:1px solid #e0e0e0; font-family:inherit; font-size:14px; outline:none;"></textarea>
+          </div>
+
+          <div class="bx--form-item" style="margin-bottom:16px;">
+            <label for="status-doing" id="lbl-doing" class="bx--label">Doing (What is being worked on today) *</label>
+            <textarea id="status-doing" class="bx--text-area" required placeholder="Describe what is currently in progress..." style="width:100%; min-height:80px; padding:10px; border:1px solid #e0e0e0; font-family:inherit; font-size:14px; outline:none;"></textarea>
+          </div>
+
+          <div class="bx--form-item" style="margin-bottom:16px;">
+            <label for="status-blockers" class="bx--label">Blockers (Issues & impediments)</label>
+            <textarea id="status-blockers" class="bx--text-area" placeholder="Any issues halting progress... (leave empty if none)" style="width:100%; min-height:60px; padding:10px; border:1px solid #e0e0e0; font-family:inherit; font-size:14px; outline:none;"></textarea>
+          </div>
+
+          <div class="bx--form-item" style="margin-bottom:16px;">
+            <label for="status-plan" class="bx--label">Next Steps / Plans</label>
+            <textarea id="status-plan" class="bx--text-area" placeholder="What is planned next..." style="width:100%; min-height:60px; padding:10px; border:1px solid #e0e0e0; font-family:inherit; font-size:14px; outline:none;"></textarea>
+          </div>
+
+          <!-- Dynamic Sources Builder -->
+          <div style="border-top:1px solid #e0e0e0; margin-top:24px; padding-top:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <label class="bx--label" style="margin-bottom:0; font-weight:600;">Referenced Coordinates (Jira, Figma, Slack, Boxnotes)</label>
+              <button type="button" class="bx--btn bx--btn--secondary bx--btn--sm" onclick="addSourceField()">+ Add Coordinate</button>
+            </div>
+            <div id="sources-builder-list" style="display:flex; flex-direction:column; gap:8px;">
+              <!-- Dynamically populated rows -->
+            </div>
+          </div>
+
+          <div style="margin-top:32px; display:flex; gap:16px; justify-content:flex-end;">
+            <button type="button" class="bx--btn bx--btn--secondary" onclick="resetStatusForm()">Clear Form</button>
+            <button type="submit" class="bx--btn bx--btn--primary">Submit Status Update</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY MODAL -->
+  <div id="history-modal" class="cds-modal-overlay" onclick="closeModalOnOverlay(event)">
+    <div class="cds-modal">
+      <div class="cds-modal-header">
+        <h3 id="history-modal-title" class="cds-modal-title">Status Timeline</h3>
+        <button class="cds-modal-close" onclick="closeHistoryModal()">&times;</button>
+      </div>
+      <div class="cds-modal-body">
+        <div id="history-timeline" class="cds-timeline">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Constants & Globals
+    const API_MEMBERS = '/api/members';
+    const API_STATUS = '/api/status';
+    const API_STATUS_DAILY = '/api/status/daily';
+    const API_STATUS_WEEKLY = '/api/status/weekly';
+    const API_HISTORY = '/api/status/history';
+
+    let allMembers = [];
+
+    // On Load Initialisation
+    let lastSyncLogId = 0;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set default dates
+      const todayString = new Date().toISOString().slice(0, 10);
+      document.getElementById('daily-date').value = todayString;
+      document.getElementById('weekly-date').value = todayString;
+
+      // Load initial data
+      loadMembers();
+      loadDailyStatus();
+      loadWeeklyStatus();
+      loadLiveConversations();
+      checkBoxnoteLiveSync();
+
+      // Poll conversations Stream every 10 seconds
+      setInterval(loadLiveConversations, 10000);
+
+      // Poll Boxnotes live updates every 4 seconds to catch and show real-time changes
+      setInterval(checkBoxnoteLiveSync, 4000);
+    });
+
+    // Check for real-time live Boxnote updates
+    async function checkBoxnoteLiveSync() {
+      try {
+        const res = await fetch('/api/boxnotes/sync-logs');
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        if (data.logs && data.logs.length > 0) {
+          const latestLog = data.logs[data.logs.length - 1];
+          
+          // If a new log ID is detected (i.e. someone has updated the Boxnote!)
+          if (lastSyncLogId > 0 && latestLog.id > lastSyncLogId) {
+            // Trigger a beautiful Carbon Toast alert
+            showAlert(`🔄 Boxnote Live-Sync: ${latestLog.user} just typed in Boxnote task board! Auto-refreshing card...`, 'success');
+            
+            // Auto-refresh the submitted updates on the board in real-time!
+            loadDailyStatus();
+            loadWeeklyStatus();
+          }
+          
+          lastSyncLogId = latestLog.id;
+        }
+      } catch (err) {
+        console.error('Boxnote sync poll error:', err.message);
+      }
+    }
+
+    let currentMiniTab = 'slack';
+    let conversationsData = null;
+
+    // Fetch and render unified mock live conversations stream (Slack & Figma)
+    async function loadLiveConversations() {
+      try {
+        const res = await fetch('/api/conversations/live');
+        if (!res.ok) throw new Error('Conversations stream offline');
+        conversationsData = await res.json();
+        renderConversations();
+      } catch (err) {
+        console.error('Conversations polling error:', err.message);
+      }
+    }
+
+    function switchMiniTab(tabId) {
+      currentMiniTab = tabId;
+      document.querySelectorAll('.mini-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`mini-tab-${tabId}`);
+      if (activeBtn) activeBtn.classList.add('active');
+      renderConversations();
+    }
+
+    function renderConversations() {
+      if (!conversationsData) return;
+      const listContainer = document.getElementById('live-conversations-list');
+      const sublabelContainer = document.getElementById('conversations-channel-label');
+      if (!listContainer || !sublabelContainer) return;
+
+      listContainer.innerHTML = '';
+
+      if (currentMiniTab === 'slack') {
+        sublabelContainer.textContent = `Channel: ${conversationsData.slack.channel}`;
+        conversationsData.slack.messages.forEach(m => {
+          const isWes = m.user === 'Wes Jones';
+          const cardClass = isWes ? 'conv-msg wes-highlight' : 'conv-msg';
+          const userClass = isWes ? 'conv-msg-user wes' : 'conv-msg-user';
+
+          const div = document.createElement('div');
+          div.className = cardClass;
+          div.innerHTML = `
+            <div class="conv-msg-header">
+              <span class="${userClass}">${m.user} <span class="conv-msg-meta">${m.username}</span></span>
+              <span class="conv-msg-time">${m.time}</span>
+            </div>
+            <div class="conv-msg-text">${m.text}</div>
+          `;
+          listContainer.appendChild(div);
+        });
+      } else if (currentMiniTab === 'figma') {
+        sublabelContainer.textContent = `File: ${conversationsData.figma.file}`;
+        conversationsData.figma.comments.forEach(c => {
+          const isWes = c.user === 'Wes Jones';
+          const cardClass = isWes ? 'conv-msg wes-highlight' : 'conv-msg';
+          const userClass = isWes ? 'conv-msg-user wes' : 'conv-msg-user';
+
+          const div = document.createElement('div');
+          div.className = cardClass;
+          div.innerHTML = `
+            <div class="conv-msg-header">
+              <span class="${userClass}">${c.user} <span class="conv-msg-meta">${c.username}</span></span>
+              <span class="conv-msg-time">${c.time}</span>
+            </div>
+            <div class="conv-msg-text">${c.text}</div>
+          `;
+          listContainer.appendChild(div);
+        });
+      }
+    }
+
+    // Navigation & Tab Switcher
+    function switchTab(tabId, params = null) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.cds-tab-btn').forEach(b => b.classList.remove('active'));
+
+      const activePanel = document.getElementById(tabId);
+      if (activePanel) activePanel.classList.add('active');
+
+      // Find the tab button to activate
+      const btn = Array.from(document.querySelectorAll('.cds-tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+      if (btn) btn.classList.add('active');
+
+      if (tabId === 'submit-tab' && params) {
+        if (params.type) {
+          document.getElementById('status-type').value = params.type;
+          toggleFormType();
+        }
+        if (params.member_id) {
+          const mId = parseInt(params.member_id);
+          const member = allMembers.find(m => m.id === mId);
+          if (member) {
+            selectComboboxOption(member.id, member.name);
+          }
+        }
+      }
+    }
+
+    // Date setter helpers
+    function setToday() {
+      const todayString = new Date().toISOString().slice(0, 10);
+      document.getElementById('daily-date').value = todayString;
+      loadDailyStatus();
+    }
+
+    function setThisWeek() {
+      const todayString = new Date().toISOString().slice(0, 10);
+      document.getElementById('weekly-date').value = todayString;
+      loadWeeklyStatus();
+    }
+
+    // Toast Alerts helper (Standard Carbon Notification style)
+    function showAlert(message, type = 'success') {
+      const container = document.getElementById('alert-container');
+      const toast = document.createElement('div');
+      toast.className = `cds-toast cds-toast-${type}`;
+      toast.innerHTML = `
+        <div class="cds-toast-bar"></div>
+        <div class="cds-toast-content">
+          <span>${message}</span>
+          <span class="cds-toast-close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+        </div>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 4500);
+    }
+
+    const sourceTypes = {
+      jira: { label: 'Jira', class: 'jira', icon: '🎫' },
+      figma: { label: 'Figma', class: 'figma', icon: '🎨' },
+      aha: { label: 'Aha!', class: 'aha', icon: '💡' },
+      boxnotes: { label: 'Box Notes', class: 'boxnotes', icon: '📝' },
+      slack: { label: 'Slack', class: 'slack', icon: '💬' }
+    };
+
+    // Fetch team members
+    async function loadMembers() {
+      try {
+        const res = await fetch(API_MEMBERS);
+        if (!res.ok) throw new Error('Failed to fetch team members');
+        allMembers = await res.json();
+        
+        renderMembersDropdown();
+        renderFilterDropdown();
+        renderMembersList();
+      } catch (err) {
+        showAlert(err.message, 'error');
+      }
+    }
+
+    // Render dropdowns into our Combobox
+    function renderMembersDropdown() {
+      const menu = document.getElementById('combobox-menu');
+      if (!menu) return;
+
+      menu.innerHTML = '';
+      if (allMembers.length === 0) {
+        menu.innerHTML = '<div class="bx--list-box__menu-item" style="color:var(--cds-text-muted); cursor:default;">No members available</div>';
+        return;
+      }
+
+      allMembers.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'bx--list-box__menu-item';
+        div.setAttribute('role', 'option');
+        div.setAttribute('data-id', m.id);
+        div.setAttribute('data-name', m.name);
+        div.textContent = m.name;
+        div.onclick = (e) => {
+          e.stopPropagation();
+          selectComboboxOption(m.id, m.name);
+        };
+        menu.appendChild(div);
+      });
+    }
+
+    // Render filter dropdown into the toolbar Combobox
+    function renderFilterDropdown() {
+      const menu = document.getElementById('daily-filter-menu');
+      if (!menu) return;
+
+      menu.innerHTML = '';
+      if (allMembers.length === 0) {
+        menu.innerHTML = '<div class="bx--list-box__menu-item" style="color:var(--cds-text-muted); cursor:default;">No members available</div>';
+        return;
+      }
+
+      allMembers.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'bx--list-box__menu-item';
+        div.setAttribute('role', 'option');
+        div.setAttribute('data-id', m.id);
+        div.setAttribute('data-name', m.name);
+        div.textContent = m.name;
+        div.onclick = (e) => {
+          e.stopPropagation();
+          selectFilterOption(m.id, m.name);
+        };
+        menu.appendChild(div);
+      });
+    }
+
+    // Filter Combobox Event Handlers
+    function toggleFilterMenu(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('daily-filter-menu');
+      if (menu.style.display === 'none') {
+        openFilterMenu();
+      } else {
+        closeFilterMenu();
+      }
+    }
+
+    function openFilterMenu() {
+      const menu = document.getElementById('daily-filter-menu');
+      menu.style.display = 'block';
+      filterFilterOptions();
+    }
+
+    function closeFilterMenu() {
+      setTimeout(() => {
+        const menu = document.getElementById('daily-filter-menu');
+        if (menu) menu.style.display = 'none';
+      }, 200);
+    }
+
+    function filterFilterOptions() {
+      const query = (document.getElementById('daily-filter-search').value || '').toLowerCase().trim();
+      const items = document.querySelectorAll('#daily-filter-menu .bx--list-box__menu-item');
+      
+      items.forEach(item => {
+        const name = item.getAttribute('data-name').toLowerCase();
+        if (name.includes(query)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      const menu = document.getElementById('daily-filter-menu');
+      if (query !== '' && menu.style.display === 'none') {
+        menu.style.display = 'block';
+      }
+    }
+
+    function selectFilterOption(id, name) {
+      document.getElementById('daily-filter-member-id').value = id;
+      document.getElementById('daily-filter-search').value = name;
+      document.getElementById('daily-filter-clear-btn').style.display = 'flex';
+      
+      document.querySelectorAll('#daily-filter-menu .bx--list-box__menu-item').forEach(item => {
+        if (parseInt(item.getAttribute('data-id')) === id) {
+          item.classList.add('selected');
+        } else {
+          item.classList.remove('selected');
+        }
+      });
+
+      closeFilterMenu();
+      filterDailyCards();
+    }
+
+    function clearFilterSelection(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('daily-filter-member-id').value = '';
+      document.getElementById('daily-filter-search').value = '';
+      document.getElementById('daily-filter-clear-btn').style.display = 'none';
+      
+      document.querySelectorAll('#daily-filter-menu .bx--list-box__menu-item').forEach(item => {
+        item.classList.remove('selected');
+        item.style.display = 'block';
+      });
+
+      closeFilterMenu();
+      filterDailyCards();
+    }
+
+    function filterDailyCards() {
+      renderDailyStatus();
+    }
+
+    // Combobox Interaction Event Handlers
+    function toggleComboboxMenu(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('combobox-menu');
+      if (menu.style.display === 'none') {
+        openComboboxMenu();
+      } else {
+        closeComboboxMenu();
+      }
+    }
+
+    function openComboboxMenu() {
+      const menu = document.getElementById('combobox-menu');
+      menu.style.display = 'block';
+      // Refilter in case input is already populated
+      filterComboboxOptions();
+    }
+
+    function closeComboboxMenu() {
+      // Delay closing menu slightly so that onclick event of menu items can execute cleanly
+      setTimeout(() => {
+        const menu = document.getElementById('combobox-menu');
+        if (menu) menu.style.display = 'none';
+      }, 200);
+    }
+
+    function filterComboboxOptions(e) {
+      const query = (document.getElementById('status-member-search').value || '').toLowerCase().trim();
+      const items = document.querySelectorAll('#combobox-menu .bx--list-box__menu-item');
+      
+      let hasVisible = false;
+      items.forEach(item => {
+        const name = item.getAttribute('data-name').toLowerCase();
+        if (name.includes(query)) {
+          item.style.display = 'block';
+          hasVisible = true;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      const menu = document.getElementById('combobox-menu');
+      if (query !== '' && menu.style.display === 'none') {
+        menu.style.display = 'block';
+      }
+    }
+
+    function selectComboboxOption(id, name) {
+      document.getElementById('status-member').value = id;
+      document.getElementById('status-member-search').value = name;
+      document.getElementById('combobox-clear-btn').style.display = 'flex';
+      
+      // Update selected class in items list
+      document.querySelectorAll('#combobox-menu .bx--list-box__menu-item').forEach(item => {
+        if (parseInt(item.getAttribute('data-id')) === id) {
+          item.classList.add('selected');
+        } else {
+          item.classList.remove('selected');
+        }
+      });
+
+      closeComboboxMenu();
+    }
+
+    function clearComboboxSelection(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('status-member').value = '';
+      document.getElementById('status-member-search').value = '';
+      document.getElementById('combobox-clear-btn').style.display = 'none';
+      
+      document.querySelectorAll('#combobox-menu .bx--list-box__menu-item').forEach(item => {
+        item.classList.remove('selected');
+        item.style.display = 'block';
+      });
+
+      closeComboboxMenu();
+    }
+
+    // Close dropdown on outside click
+    document.addEventListener('click', () => {
+      const menu = document.getElementById('combobox-menu');
+      if (menu) menu.style.display = 'none';
+      const filterMenu = document.getElementById('daily-filter-menu');
+      if (filterMenu) filterMenu.style.display = 'none';
+    });
+
+    // Render team directory
+    function renderMembersList() {
+      const container = document.getElementById('members-list');
+      container.innerHTML = '';
+
+      if (allMembers.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:32px; border:1px dashed #e0e0e0; grid-column:1/-1; background-color:#ffffff;">
+            No team members found. Add some on the left form!
+          </div>
+        `;
+        return;
+      }
+
+      allMembers.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'cds-member-card';
+        div.innerHTML = `
+          <div>
+            <h4 style="font-size:14px; font-weight:600; color:#161616;">${m.name}</h4>
+            <p style="font-size:12px; color:#525252;">${m.email || 'No email provided'}</p>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="bx--btn bx--btn--ghost bx--btn--sm" style="padding: 0 12px;" onclick="viewMemberHistory(${m.id}, '${m.name}')">History</button>
+            <button class="bx--btn bx--btn--danger bx--btn--sm" style="padding: 0 12px; background-color: #ffebeb; color: #fa4d56;" onclick="handleDeleteMember(${m.id}, '${m.name}')">Remove</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // Delete member
+    async function handleDeleteMember(id, name) {
+      if (!confirm(`Are you sure you want to remove ${name} from the team? This will delete all of their past status updates.`)) {
+        return;
+      }
+      try {
+        const res = await fetch(`${API_MEMBERS}/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Could not delete member');
+        showAlert(`Successfully removed ${name}`);
+        loadMembers();
+        loadDailyStatus();
+        loadWeeklyStatus();
+      } catch (err) {
+        showAlert(err.message, 'error');
+      }
+    }
+
+    // Add member
+    async function handleAddMember(e) {
+      e.preventDefault();
+      const nameInput = document.getElementById('member-name');
+      const emailInput = document.getElementById('member-email');
+
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+
+      if (!name) return;
+
+      try {
+        const res = await fetch(API_MEMBERS, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email })
+        });
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || 'Failed to add member');
+        }
+
+        showAlert(`Successfully added team member: ${name}`);
+        nameInput.value = '';
+        emailInput.value = '';
+        loadMembers();
+        loadDailyStatus();
+        loadWeeklyStatus();
+      } catch (err) {
+        showAlert(err.message, 'error');
+      }
+    }
+
+    let currentDailyData = null;
+
+    // Fetch and render daily status updates
+    async function loadDailyStatus() {
+      const date = document.getElementById('daily-date').value;
+      if (!date) return;
+
+      try {
+        const res = await fetch(`${API_STATUS_DAILY}?date=${date}`);
+        if (!res.ok) throw new Error('Failed to load daily status');
+        const data = await res.json();
+        currentDailyData = data;
+        renderDailyStatus();
+      } catch (err) {
+        showAlert(err.message, 'error');
+      }
+    }
+
+    // Render daily status, respecting the member filter
+    function renderDailyStatus() {
+      if (!currentDailyData) return;
+
+      const data = currentDailyData;
+      const filterMemberId = document.getElementById('daily-filter-member-id').value;
+
+      // Stats reflect the global (unfiltered) day status
+      document.getElementById('daily-stat-sub').textContent = data.submitted.length;
+      document.getElementById('daily-stat-pend').textContent = data.pending.length;
+      
+      const blockerCount = data.submitted.filter(u => u.blockers && u.blockers.trim().length > 0).length;
+      document.getElementById('daily-stat-block').textContent = blockerCount;
+
+      const updatesContainer = document.getElementById('daily-updates');
+      updatesContainer.innerHTML = '';
+
+      // Filter submitted list if a member is selected
+      let filteredSubmitted = data.submitted;
+      if (filterMemberId) {
+        filteredSubmitted = data.submitted.filter(u => u.member_id === parseInt(filterMemberId));
+      }
+
+      if (filteredSubmitted.length === 0) {
+        const message = filterMemberId
+          ? 'No status updates submitted for this date matching the selected member.'
+          : 'No status updates submitted for this date.';
+        updatesContainer.innerHTML = `
+          <div style="text-align:center; padding:32px; background-color:#ffffff; border:1px solid #e0e0e0; color:#525252;">
+            ${message}
+          </div>
+        `;
+      } else {
+        filteredSubmitted.forEach(u => {
+          const card = document.createElement('div');
+          card.className = 'cds-update-card';
+          
+          let boxesHTML = `
+            <div class="cds-status-block done">
+              <h4>Done</h4>
+              <p>${u.done}</p>
+            </div>
+            <div class="cds-status-block doing">
+              <h4>Doing</h4>
+              <p>${u.doing}</p>
+            </div>
+          `;
+
+          if (u.blockers && u.blockers.trim().length > 0) {
+            boxesHTML += `
+              <div class="cds-status-block blockers" style="grid-column: 1 / -1;">
+                <h4>Blockers</h4>
+                <p>${u.blockers}</p>
+              </div>
+            `;
+          }
+
+          if (u.plan && u.plan.trim().length > 0) {
+            boxesHTML += `
+              <div class="cds-status-block plan" style="grid-column: 1 / -1;">
+                <h4>Next Steps</h4>
+                <p>${u.plan}</p>
+              </div>
+            `;
+          }
+
+          // Badges
+          let sourcesHTML = '';
+          if (u.sources && u.sources.length > 0) {
+            sourcesHTML = `<div class="source-badge-container">`;
+            u.sources.forEach(s => {
+              const info = sourceTypes[s.source_type] || { label: 'Link', class: 'boxnotes', icon: '🔗' };
+              const labelText = s.label ? `${info.label}: ${s.label}` : info.label;
+              const tooltipNotes = s.notes ? ` title="${s.notes}"` : '';
+              sourcesHTML += `
+                <a href="${s.url || '#'}" target="_blank" class="cds-badge ${info.class}"${tooltipNotes}>
+                  <span>${info.icon}</span> ${labelText}
+                </a>
+              `;
+            });
+            sourcesHTML += `</div>`;
+          }
+
+          const submittedTime = new Date(u.submitted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+          card.innerHTML = `
+            <div class="cds-update-card-header">
+              <div>
+                <h3 class="cds-member-name">${u.member_name}</h3>
+                <div class="cds-update-meta">Submitted at ${submittedTime}</div>
+              </div>
+              <button class="bx--btn bx--btn--ghost bx--btn--sm" style="padding: 0 12px;" onclick="viewMemberHistory(${u.member_id}, '${u.member_name}')">
+                Full History
+              </button>
+            </div>
+            <div class="cds-status-grid">
+              ${boxesHTML}
+            </div>
+            ${sourcesHTML}
+          `;
+          updatesContainer.appendChild(card);
+        });
+      }
+
+      // Pending lists
+      const pendingContainer = document.getElementById('daily-pending');
+      pendingContainer.innerHTML = '';
+      if (data.pending.length === 0) {
+        pendingContainer.innerHTML = `<li style="text-align:center; padding:12px; font-size:12px; color:#525252;">All members submitted! 🎉</li>`;
+      } else {
+        data.pending.forEach(m => {
+          const li = document.createElement('li');
+          li.className = 'cds-pending-item';
+          li.innerHTML = `
+            <span class="cds-pending-name">${m.name}</span>
+            <span class="cds-pending-link" onclick="switchTab('submit-tab', {member_id: ${m.id}, type: 'daily'})">Log status</span>
+          `;
+          pendingContainer.appendChild(li);
+        });
+      }
+    }
+
+    // Fetch and render weekly summaries
+    async function loadWeeklyStatus() {
+      const date = document.getElementById('weekly-date').value;
+      if (!date) return;
+
+      try {
+        const res = await fetch(`${API_STATUS_WEEKLY}?date=${date}`);
+        if (!res.ok) throw new Error('Failed to load weekly summaries');
+        const data = await res.json();
+
+        // Update range label
+        document.getElementById('week-date-range-label').innerHTML = `
+          <strong>Week Range:</strong> Monday, ${data.week_start} &nbsp;&mdash;&nbsp; Sunday, ${data.week_end}
+        `;
+
+        // Stats
+        document.getElementById('weekly-stat-sub').textContent = data.submitted.length;
+        document.getElementById('weekly-stat-pend').textContent = data.pending.length;
+        
+        const blockerCount = data.submitted.filter(u => u.blockers && u.blockers.trim().length > 0).length;
+        document.getElementById('weekly-stat-block').textContent = blockerCount;
+
+        const updatesContainer = document.getElementById('weekly-updates');
+        updatesContainer.innerHTML = '';
+
+        if (data.submitted.length === 0) {
+          updatesContainer.innerHTML = `
+            <div style="text-align:center; padding:32px; background-color:#ffffff; border:1px solid #e0e0e0; color:#525252;">
+              No weekly summaries submitted for this week range.
+            </div>
+          `;
+        } else {
+          data.submitted.forEach(u => {
+            const card = document.createElement('div');
+            card.className = 'cds-update-card';
+            
+            let boxesHTML = `
+              <div class="cds-status-block done">
+                <h4>Completed This Week</h4>
+                <p>${u.done}</p>
+              </div>
+              <div class="cds-status-block doing">
+                <h4>Planned For Next Week</h4>
+                <p>${u.doing}</p>
+              </div>
+            `;
+
+            if (u.blockers && u.blockers.trim().length > 0) {
+              boxesHTML += `
+                <div class="cds-status-block blockers" style="grid-column: 1 / -1;">
+                  <h4>Key Blockers</h4>
+                  <p>${u.blockers}</p>
+                </div>
+              `;
+            }
+
+            if (u.plan && u.plan.trim().length > 0) {
+              boxesHTML += `
+                <div class="cds-status-block plan" style="grid-column: 1 / -1;">
+                  <h4>Longer-Term Plan</h4>
+                  <p>${u.plan}</p>
+                </div>
+              `;
+            }
+
+            // Badges
+            let sourcesHTML = '';
+            if (u.sources && u.sources.length > 0) {
+              sourcesHTML = `<div class="source-badge-container">`;
+              u.sources.forEach(s => {
+                const info = sourceTypes[s.source_type] || { label: 'Link', class: 'boxnotes', icon: '🔗' };
+                const labelText = s.label ? `${info.label}: ${s.label}` : info.label;
+                const tooltipNotes = s.notes ? ` title="${s.notes}"` : '';
+                sourcesHTML += `
+                  <a href="${s.url || '#'}" target="_blank" class="cds-badge ${info.class}"${tooltipNotes}>
+                    <span>${info.icon}</span> ${labelText}
+                  </a>
+                `;
+              });
+              sourcesHTML += `</div>`;
+            }
+
+            const submittedDay = new Date(u.submitted_at).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+            card.innerHTML = `
+              <div class="cds-update-card-header">
+                <div>
+                  <h3 class="cds-member-name">${u.member_name}</h3>
+                  <div class="cds-update-meta">Submitted on ${submittedDay}</div>
+                </div>
+                <button class="bx--btn bx--btn--ghost bx--btn--sm" style="padding: 0 12px;" onclick="viewMemberHistory(${u.member_id}, '${u.member_name}')">
+                  Full History
+                </button>
+              </div>
+              <div class="cds-status-grid">
+                ${boxesHTML}
+              </div>
+              ${sourcesHTML}
+            `;
+            updatesContainer.appendChild(card);
+          });
+        }
+
+        // Pending lists
+        const pendingContainer = document.getElementById('weekly-pending');
+        pendingContainer.innerHTML = '';
+        if (data.pending.length === 0) {
+          pendingContainer.innerHTML = `<li style="text-align:center; padding:12px; font-size:12px; color:#525252;">All members submitted! 🎉</li>`;
+        } else {
+          data.pending.forEach(m => {
+            const li = document.createElement('li');
+            li.className = 'cds-pending-item';
+            li.innerHTML = `
+              <span class="cds-pending-name">${m.name}</span>
+              <span class="cds-pending-link" onclick="switchTab('submit-tab', {member_id: ${m.id}, type: 'weekly'})">Log summary</span>
+            `;
+            pendingContainer.appendChild(li);
+          });
+        }
+
+      } catch (err) {
+        showAlert(err.message, 'error');
+      }
+    }
+
+    // Toggle labels
+    function toggleFormType() {
+      const type = document.getElementById('status-type').value;
+      const lblDone = document.getElementById('lbl-done');
+      const lblDoing = document.getElementById('lbl-doing');
+      const weekField = document.getElementById('week-start-field');
+      const title = document.getElementById('log-status-title');
+
+      if (type === 'weekly') {
+        lblDone.textContent = "Completed This Week (Summarise completed work) *";
+        lblDoing.textContent = "Planned For Next Week (Summarise focus points) *";
+        weekField.style.display = 'block';
+        title.textContent = 'Log Weekly Summary';
+      } else {
+        lblDone.textContent = "Done (What was achieved today) *";
+        lblDoing.textContent = "Doing (What is being worked on today) *";
+        weekField.style.display = 'none';
+        title.textContent = 'Log Daily Status';
+      }
+    }
+
+    // Dynamic sources builder inside form (Clean HTML matching Carbon Inputs)
+    let sourceIdCounter = 0;
+    function addSourceField() {
+      const container = document.getElementById('sources-builder-list');
+      const id = sourceIdCounter++;
+      const div = document.createElement('div');
+      div.className = 'bx--form-item';
+      div.id = `source-row-${id}`;
+      div.style = "display:grid; grid-template-columns: 100px 140px 1fr auto; gap:8px; align-items:center; margin-bottom:8px;";
+      div.innerHTML = `
+        <div class="bx--select" style="width:100%; height:36px;">
+          <select class="bx--select-input src-type" style="padding-top:0; padding-bottom:0; height:36px;">
+            <option value="jira">Jira</option>
+            <option value="figma">Figma</option>
+            <option value="aha">Aha!</option>
+            <option value="boxnotes">Box Notes</option>
+            <option value="slack">Slack</option>
+          </select>
+        </div>
+        <input type="text" class="bx--text-input src-label" placeholder="Label/ID (e.g. ABC-123)" style="height:36px; padding:0 8px;">
+        <input type="url" class="bx--text-input src-url" placeholder="URL Link (https://...)" style="height:36px; padding:0 8px;">
+        <button type="button" class="bx--btn bx--btn--danger bx--btn--sm" style="height:36px; padding:0 12px; min-width:auto;" onclick="removeSourceField(${id})">
+          &times;
+        </button>
+      `;
+      container.appendChild(div);
+    }
+
+    function removeSourceField(id) {
+      const row = document.getElementById(`source-row-${id}`);
+      if (row) row.remove();
+    }
+
+    // Reset Form
+    function resetStatusForm() {
+      document.getElementById('status-update-form').reset();
+      clearComboboxSelection();
+      document.getElementById('sources-builder-list').innerHTML = '';
+      toggleFormType();
+    }
+
+    // Submit Status Update
+    async function handleStatusSubmit(e) {
+      e.preventDefault();
+
+      const memberId = document.getElementById('status-member').value;
+      const type = document.getElementById('status-type').value;
+      const done = document.getElementById('status-done').value.trim();
+      const doing = document.getElementById('status-doing').value.trim();
+      const blockers = document.getElementById('status-blockers').value.trim();
+      const plan = document.getElementById('status-plan').value.trim();
+      
+      const customSubmittedAt = document.getElementById('status-submitted-at').value;
+      const weekStartVal = document.getElementById('status-week-start').value;
+
+      if (!memberId) {
+        showAlert('Please select a team member', 'error');
+        return;
+      }
+
+      // Read sources
+      const sources = [];
+      const rows = document.querySelectorAll('[id^="source-row-"]');
+      rows.forEach(r => {
+        const source_type = r.querySelector('.src-type').value;
+        const label = r.querySelector('.src-label').value.trim();
+        const url = r.querySelector('.src-url').value.trim();
+        if (source_type && (label || url)) {
+          sources.push({ source_type, label, url });
+        }
+      });
+
+      const payload = {
+        member_id: parseInt(memberId),
+        type,
+        done,
+        doing,
+        blockers,
+        plan,
+        sources
+      };
+
+      if (customSubmittedAt) {
+        payload.submitted_at = customSubmittedAt;
+      }
+      if (type === 'weekly' && weekStartVal) {
+        payload.week_start = weekStartVal;
+      }
+
+      try {
+        const res = await fetch(API_STATUS, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || 'Failed to submit status update');
+        }
+
+        showAlert('Status update logged successfully!');
+        resetStatusForm();
+
+        loadDailyStatus();
+        loadWeeklyStatus();
+        switchTab(type);
+
+      } catch (err) {
+        showAlert(err.message, 'error');
+      }
+    }
+
+    // History Modal
+    async function viewMemberHistory(memberId, name) {
+      document.getElementById('history-modal-title').textContent = `Status History: ${name}`;
+      const container = document.getElementById('history-timeline');
+      container.innerHTML = '<div style="text-align:center; padding:20px; font-size:12px; color:#525252;">Loading history...</div>';
+      
+      document.getElementById('history-modal').style.display = 'flex';
+
+      try {
+        const res = await fetch(`${API_HISTORY}/${memberId}`);
+        if (!res.ok) throw new Error('Failed to load history');
+        const updates = await res.json();
+
+        container.innerHTML = '';
+
+        if (updates.length === 0) {
+          container.innerHTML = `<div style="text-align:center; padding:20px; color:#525252; font-size:12px;">No past updates recorded.</div>`;
+          return;
+        }
+
+        updates.forEach(u => {
+          const div = document.createElement('div');
+          div.className = 'cds-timeline-item';
+          
+          const dateStr = new Date(u.submitted_at).toLocaleDateString([], { 
+            weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+          });
+
+          const badgeText = u.type === 'weekly' ? 'Weekly Summary' : 'Daily Status';
+          const badgeClassColor = u.type === 'weekly' ? 'background-color:#ede7f6; color:#5e35b1;' : 'background-color:#eceff1; color:#455a64;';
+
+          let statusHTML = `
+            <div style="margin-top:8px; font-size:13px; color:#161616;">
+              <strong>Done:</strong> ${u.done}
+            </div>
+            <div style="margin-top:4px; font-size:13px; color:#161616;">
+              <strong>Doing:</strong> ${u.doing}
+            </div>
+          `;
+
+          if (u.blockers && u.blockers.trim()) {
+            statusHTML += `<div style="margin-top:4px; font-size:13px; color:#da1e28;"><strong>Blockers:</strong> ${u.blockers}</div>`;
+          }
+
+          if (u.plan && u.plan.trim()) {
+            statusHTML += `<div style="margin-top:4px; font-size:13px; color:#8a3ffc;"><strong>Plan:</strong> ${u.plan}</div>`;
+          }
+
+          let sourcesHTML = '';
+          if (u.sources && u.sources.length > 0) {
+            sourcesHTML = `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; border-top:1px dashed #e0e0e0; padding-top:6px;">`;
+            u.sources.forEach(s => {
+              const info = sourceTypes[s.source_type] || { label: 'Link', class: 'boxnotes', icon: '🔗' };
+              sourcesHTML += `
+                <a href="${s.url || '#'}" target="_blank" class="cds-badge ${info.class}" style="padding:2px 8px; font-size:10px;">
+                  <span>${info.icon}</span> ${s.label || info.label}
+                </a>
+              `;
+            });
+            sourcesHTML += `</div>`;
+          }
+
+          div.innerHTML = `
+            <div class="cds-timeline-date">
+              ${dateStr}
+              <span style="display:inline-block; font-size:9px; text-transform:uppercase; font-weight:700; padding:1px 6px; margin-left:8px; ${badgeClassColor}">${badgeText}</span>
+            </div>
+            ${statusHTML}
+            ${sourcesHTML}
+          `;
+          container.appendChild(div);
+        });
+
+      } catch (err) {
+        container.innerHTML = `<div style="color:#da1e28; padding:20px; text-align:center; font-size:12px;">${err.message}</div>`;
+      }
+    }
+
+    function closeHistoryModal() {
+      document.getElementById('history-modal').style.display = 'none';
+    }
+
+    function closeModalOnOverlay(e) {
+      if (e.target.id === 'history-modal') {
+        closeHistoryModal();
+      }
+    }
+  </script>
+</body>
+</html>
